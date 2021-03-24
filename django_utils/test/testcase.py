@@ -1,6 +1,4 @@
-import traceback
-from typing import Union
-from ..error.error_code import ProjectError, ProjectException, ProjectErrorDetail
+from django_utils.error.error_code import ProjectError, ProjectException, ProjectErrorDetail
 
 
 class _ProjectErrorTester:
@@ -13,13 +11,13 @@ class _ProjectErrorTester:
 
     def __exit__(self, exc_type, exc_val: ProjectException, exc_tb):
         if exc_type is None:
-            raise AssertionError("测试失败！未抛出异常")
+            raise AssertionError("测试失败！未抛出任何异常！")
         if exc_type == ProjectException:
             if self._error is None:
                 return True
             if exc_val.error != self._error:
-                msg = f"测试失败！未抛出{self._error.name}，抛出的异常为{str(exc_val)}"
-                raise AssertionError(msg)
+                msg = f"测试失败！未抛出{self._error.name}，抛出的异常为{exc_val.error.name}"
+                raise AssertionError(msg) from None
             elif self._msg and self._msg not in str(exc_val):
                 raise AssertionError(f'测试失败！不包含错误信息"{self._msg}"')
         else:
@@ -27,8 +25,9 @@ class _ProjectErrorTester:
         return True
 
 
-def assert_error(error: ProjectError, msg: str = None):
+def assert_error(error: ProjectError, msg: str = None) -> _ProjectErrorTester:
     """
+    生成一个_projectErrorTester上下文管理器，用来
     断言with块内的代码一定抛出包含给定的ProjectError的ProjectException异常，
     如果指定msg则要求抛出的异常中一定包含msg字符串
 

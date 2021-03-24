@@ -9,7 +9,7 @@ class ProjectError(Enum):
     其中HTTP状态码和自定义错误码可以省略
     HTTP状态码默认为422，自定义错误默认为10000
     """
-    SUCCESS = "Success", 200,
+    SUCCESS = "Success", 200, 0
     UNKNOWN_ERROR = "Unknown error", 500,
     BAD_REQUEST = "Bad req", 400,
     PERMISSION_DENIED = "Permission denied", 403,
@@ -19,6 +19,7 @@ class ProjectError(Enum):
     WRONG_FIELD_TYPE = "Invalid field type", 422, 3
     NOT_ACCEPTABLE = "Invalid content-type", 406,
     INVALID_FIELD_VALUE = "Invalid field value", 422, 4
+    UNPROCESSABLE = "Unprocessable entity", 422, 422
 
     def __init__(self, *args, **kwargs):
         assert isinstance(self.value, tuple), "Each error enum must be a tuple"
@@ -60,6 +61,9 @@ class ProjectErrorDetail:
         self.error = error
         self.error_detail = error_detail
 
+    def __getattr__(self, item):
+        return getattr(self.error, item)
+
 
 class ProjectException(Exception):
     """
@@ -76,18 +80,18 @@ class ProjectException(Exception):
         else:
             self.error = error.error
             self.error_detail = error.error_detail
-        self.code = self.error.value
+        self.code = self.error.error_code
         self.msg = self.error.error_message
         self.status_code = self.error.status_code
 
     def to_dict(self):
         d = {'msg': self.msg, 'code': self.code}
         if self.error_detail:
-            d['detail'] = self.error_detail
+            d['error_detail'] = self.error_detail
         return d
 
     def __str__(self):
-        msg = f"ProjectException: {self.error.name} "
+        msg = self.error.error_message
         if self.error_detail:
             msg += f"({str(self.error_detail)})"
         return msg
