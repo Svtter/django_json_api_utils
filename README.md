@@ -14,6 +14,11 @@ from django_utils import ProjectError
 
 ```python
 class ProjectError(Enum):
-pass
+
+
+    pass
 ```
+
 #### ProjectException类
+
+> To Be Continued

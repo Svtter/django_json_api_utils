@@ -4,7 +4,7 @@ from django_utils.error.error_handler import abort_with_error, ModelExceptionHan
 from django_utils.error.middleware import ProjectExceptionMiddleware
 from django.test import TestCase, RequestFactory
 from django.conf import settings
-from django_utils.tests.models import TestModel
+from tests.models import TestModel
 from django_utils.test.testcase import assert_error
 
 

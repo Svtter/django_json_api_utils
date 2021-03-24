@@ -14,8 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from django_utils.tests.test_functional import (functional_test_json_view, functional_test_other_view,
-                                                functional_test_param_view)
+from tests.test_functional import (functional_test_json_view, functional_test_other_view,
+                                   functional_test_param_view)
 
 urlpatterns = [
     path('functional_test_json/', functional_test_json_view, name='json'),
