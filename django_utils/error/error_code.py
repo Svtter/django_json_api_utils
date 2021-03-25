@@ -85,7 +85,7 @@ class ProjectException(Exception):
         self.status_code = self.error.status_code
 
     def to_dict(self):
-        d = {'msg': self.msg, 'code': self.code}
+        d = {'msg': self.msg, 'code': self.code, 'data': {}}
         if self.error_detail:
             d['error_detail'] = self.error_detail
         return d

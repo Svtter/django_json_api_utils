@@ -1,3 +1,4 @@
+from django.test.client import Client
 from django_utils.error.error_code import ProjectError, ProjectException, ProjectErrorDetail
 
 
@@ -38,3 +39,37 @@ def assert_error(error: ProjectError, msg: str = None) -> _ProjectErrorTester:
         msg = error.error_detail
         error = error.error
     return _ProjectErrorTester(error, msg)
+
+
+class JSONClient(Client):
+
+    def __getattr__(self, item):
+        # suppresses 'Unresolved attribute' in Pycharm
+        pass
+
+    def _set_response(self, response):
+        try:
+            data = response.json()
+            self.__dict__.update(data)
+            return response
+        except Exception:
+            try:
+                raise ValueError(f'Response is not a json object. Response is "{response.content.decode()}"')
+            except UnicodeDecodeError:
+                raise ValueError("Response is binary instead of a json object.")
+
+    def get(self, path, data: dict = None, follow: bool = False, secure: bool = False, **extra):
+        res = super().get(path=path, data=data, follow=follow, secure=False, **extra)
+        self._set_response(res)
+        return res
+
+    def post(self, path, data=None, content_type='application/json',
+             follow=False, secure=False, **extra):
+        res = super().post(path, data, content_type, follow, secure, **extra)
+        self._set_response(res)
+        return res
+
+    def post_file(self, path, data: dict, follow=False, secure=False, **extra):
+        res = super().post(path, data, follow=follow, secure=secure, **extra)
+        self._set_response(res)
+        return res

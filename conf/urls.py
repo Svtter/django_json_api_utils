@@ -14,12 +14,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from tests.test_functional import (functional_test_json_view, functional_test_other_view,
-                                   functional_test_param_view)
+import tests.views as views
 
 urlpatterns = [
-    path('functional_test_json/', functional_test_json_view, name='json'),
-    path('functional_test_param/', functional_test_param_view, name='param'),
-    path('functional_test_other/', functional_test_other_view, name='other'),
-
+    path('functional_test_json/', views.functional_test_json_view, name='json'),
+    path('functional_test_param/', views.functional_test_param_view, name='param'),
+    path('functional_test_multipart', views.functional_test_multipart, name='multipart'),
+    path('functional_test_other/', views.functional_test_other_view, name='other'),
+    path('test_json_client/', views.test_json_client, name='json_client'),
 ]

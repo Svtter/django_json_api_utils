@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django_utils.test import assert_error
 from django_utils.error import ProjectError
-from django_utils.req import param_field_getter, json_field_getter
+from django_utils.req import param_field_getter, json_field_getter, multipart_getter
 from django.test.client import RequestFactory
 
 
@@ -33,7 +33,7 @@ class HTTPRequestTest(TestCase):
             json_field_getter(request)('e')
 
         # wrong field type
-        with assert_error(ProjectError.WRONG_FIELD_TYPE, "a"):
+        with assert_error(ProjectError.WRONG_FIELD_TYPE, "str"):
             json_field_getter(request)('a', str)
         # allow none
         self.assertEqual(json_field_getter(request)('d', allow_empty=True), None)
@@ -55,14 +55,33 @@ class HTTPRequestTest(TestCase):
         with assert_error(ProjectError.FIELD_MISSING, 'c'):
             getter('c', allow_empty=False)
         # wrong field type
-        with assert_error(ProjectError.WRONG_FIELD_TYPE, '字段"b"的类型必须是integer'):
-            getter('b', convert_to=int)
+        with assert_error(ProjectError.WRONG_FIELD_TYPE, 'integer'):
+            getter('b', cast_to=int)
         # invalid value
         with assert_error(ProjectError.INVALID_FIELD_VALUE, '[a, b, c]'):
             getter('b', allowed_values=['a', 'b', 'c'])
         with assert_error(ProjectError.INVALID_FIELD_VALUE, '[1, 2, 3]'):
             getter('a', allowed_values=[1, 2, 3])
-        self.assertEqual(getter('c', convert_to=int, default=10), 10)
-        self.assertEqual(getter('a', convert_to=int, allow_empty=False), 0)
-        self.assertEqual(getter('d', convert_to=bool), True)
-        self.assertEqual(getter('b', convert_to=bool), False)
+        self.assertEqual(getter('c', cast_to=int, default=10), 10)
+        self.assertEqual(getter('a', cast_to=int, allow_empty=False), 0)
+        self.assertEqual(getter('d', cast_to=bool), True)
+        self.assertEqual(getter('b', cast_to=bool), False)
+
+    def test_multipart_getter(self):
+        with open('.gitignore', 'rb') as fp:
+            data = {'a': 1, 'b': 'b', 'file': fp, 'c': [1, 2, 3]}
+            req = self.factory.post('', data)
+            getter = multipart_getter(req)
+            a = getter('a', required_type=int)
+            c = getter('c', required_type=list)
+            self.assertEqual(a, 1)
+            self.assertEqual(c, ['1', '2', '3'])
+            with assert_error(ProjectError.WRONG_FIELD_TYPE):
+                getter('b', required_type=int)
+            with assert_error(ProjectError.INVALID_FIELD_VALUE):
+                getter('b', allowed_values=['1', '2'], required_type=str)
+            with assert_error(ProjectError.FIELD_MISSING):
+                getter('abc')
+            fp.seek(0)
+            d = fp.read()
+            self.assertEqual(d, getter('file', required_type=bytes).read())
