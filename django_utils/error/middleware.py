@@ -1,0 +1,43 @@
+import logging
+import traceback
+import json
+
+from django.conf import settings
+from django.http import HttpResponse
+from django_utils.error.error_code import ProjectError, ProjectException
+
+logger = logging.getLogger('django')
+
+
+class ProjectExceptionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
+        return response
+
+    def process_exception(self, request, exception: Exception):
+        if not isinstance(exception, ProjectException):
+            # 未知异常，记录异常栈
+            logger.error(traceback.format_exc())
+            if settings.DEBUG:  # DEBUG模式下重新抛出
+                raise exception
+            exception = ProjectException(ProjectError.UNKNOWN_ERROR)
+        else:
+            logger.debug(traceback.format_exc())
+            if settings.DEBUG:
+                raise
+
+        r = HttpResponse(json.dumps(exception.to_dict(), ensure_ascii=False),
+                         content_type='application/json; charset=utf-8')
+        r.status_code = exception.status_code
+        return r
