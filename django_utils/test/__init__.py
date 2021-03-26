@@ -1,1 +1,1 @@
-from django_utils.test.testcase import assert_error  # noqa
+from django_utils.test.testcase import assert_error, JSONClient  # noqa

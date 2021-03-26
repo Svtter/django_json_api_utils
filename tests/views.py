@@ -11,14 +11,14 @@ def functional_test_json_view(request):
 
 def functional_test_param_view(request):
     getter = param_field_getter(request)
-    a = getter('a', cast_to=int, allow_empty=False)
+    a = getter('a', required_type=int, allow_empty=False)
     b = getter('b')
     return json_response({'a': a, 'b': b})
 
 
 def functional_test_multipart_view(request):
     getter = multipart_getter(request)
-    a = getter('a', cast_to=int, allow_empty=False)
+    a = getter('a', required_type=int, allow_empty=False)
     b = getter('b')
     return json_response({'a': a, 'b': b})
 

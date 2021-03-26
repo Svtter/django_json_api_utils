@@ -139,7 +139,7 @@ def multipart_getter(request: HttpRequest):
     return partial(get_multipart_field, request)
 
 
-def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_values=None, cast_to=None,
+def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_values=None, required_type=None,
                     default=None):
     """
     Get URL parameters from HttpRequest
@@ -147,26 +147,26 @@ def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_
     :param field: field name
     :param allow_empty:
     :param allowed_values: a list or a tuple of values
-    :param cast_to: cast the value to this type
+    :param required_type: cast the value to this type
     :param default:
     """
 
     value = request.GET.get(field)
-    if default is not None and cast_to:
-        assert isinstance(default, cast_to)
+    if default is not None and required_type:
+        assert isinstance(default, required_type)
     if not value:
         value = None
-    if cast_to:
-        assert cast_to in (int, float, bool)
+    if required_type:
+        assert required_type in (int, float, bool)
         if value is not None:
             try:
-                if cast_to is bool:
+                if required_type is bool:
                     value = value == str('true')
                 else:
-                    value = cast_to(value)
+                    value = required_type(value)
             except (TypeError, ValueError):
                 abort_with_error(ProjectError.WRONG_FIELD_TYPE,
-                                 error_detail=f'Field "{field}" must be {_get_type_name(cast_to)}')
+                                 error_detail=f'Field "{field}" must be {_get_type_name(required_type)}')
 
     if value is None:
         if allow_empty:

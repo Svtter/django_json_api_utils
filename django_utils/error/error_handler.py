@@ -40,6 +40,7 @@ class ModelExceptionHandler:
             abort_with_error(ProjectError.NOT_FOUND(f"{self._display_name}不存在"))
         if exc_type == IntegrityError:
             if 'UNIQUE' in exc_val:
+                print(exc_val)
                 abort_with_error(ProjectError.UNPROCESSABLE(f"{self._display_name}已经存在"))
             return False
         return False

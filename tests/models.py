@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class TestModel(models.Model):
+class ModelForTesting(models.Model):
     class Meta:
         app_label = 'tests'
 
