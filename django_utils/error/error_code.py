@@ -1,88 +1,17 @@
-from enum import Enum
-from typing import Union
-
-
-class ProjectError(Enum):
-    """
-    错误类枚举
-    每个错误的值为一个元组，（错误名，HTTP状态码，自定义错误码）
-    其中HTTP状态码和自定义错误码可以省略
-    HTTP状态码默认为422，自定义错误默认为10000
-    """
-    SUCCESS = "Success", 200, 0
-    UNKNOWN_ERROR = "Unknown error", 500,
-    BAD_REQUEST = "Bad req", 400,
-    PERMISSION_DENIED = "Permission denied", 403,
-    METHOD_NOT_ALLOWED = "Method not allowed", 405,
-    NOT_FOUND = "Resource not found", 404,
-    FIELD_MISSING = "Field missing", 422, 2
-    WRONG_FIELD_TYPE = "Invalid field type", 422, 3
-    NOT_ACCEPTABLE = "Invalid content-type", 406,
-    INVALID_FIELD_VALUE = "Invalid field value", 422, 4
-    UNPROCESSABLE = "Unprocessable entity", 422, 422
-
-    def __init__(self, *args, **kwargs):
-        assert isinstance(self.value, tuple), "Each error enum must be a tuple"
-        assert isinstance(self.value[0], str)
-
-    @property
-    def error_message(self) -> str:
-        """
-        错误名
-        """
-        return self.value[0]
-
-    @property
-    def status_code(self) -> int:
-        """
-        返回HTTP状态码，如果未指定，返回422。
-        :return: HTTP状态码
-        """
-        if len(self.value) > 1:
-            return self.value[1]
-        return 422
-
-    @property
-    def error_code(self) -> int:
-        if len(self.value) > 2:
-            return self.value[2]
-        return 10000
-
-    def __call__(self, error_detail: str):
-        return ProjectErrorDetail(self, error_detail)
-
-
-class ProjectErrorDetail:
-    """
-    包含了详细错误的的WaterError
-    """
-
-    def __init__(self, error: 'ProjectError', error_detail: Union[dict, str]):
-        self.error = error
-        self.error_detail = error_detail
-
-    def __getattr__(self, item):
-        return getattr(self.error, item)
-
-
 class ProjectException(Exception):
     """
     异常类，必须指定产生的异常的ProjectError枚举值
     """
+    _code_set = set()
 
-    def __init__(self, error: Union[ProjectError, ProjectErrorDetail]):
-        """
-        :param error: ProjectError枚举值，或者ProjectErrorDetail对象
-        """
-        if isinstance(error, ProjectError):
-            self.error = error
-            self.error_detail = None
-        else:
-            self.error = error.error
-            self.error_detail = error.error_detail
-        self.code = self.error.error_code
-        self.msg = self.error.error_message
-        self.status_code = self.error.status_code
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls, *args, **kwargs)
+
+    def __init__(self, msg: str, code: int, status_code: int = 422):
+        self.msg = msg
+        self.code = code
+        self.status_code = status_code
+        self.error_detail = None
 
     def to_dict(self):
         d = {'msg': self.msg, 'code': self.code, 'data': {}}
@@ -91,7 +20,63 @@ class ProjectException(Exception):
         return d
 
     def __str__(self):
-        msg = self.error.error_message
+        msg = self.msg
         if self.error_detail:
             msg += f"({str(self.error_detail)})"
         return msg
+
+    def __call__(self, error_detail):
+        self.error_detail = error_detail
+        return self
+
+
+class ProjectErrorMetaClass(type):
+    _error_code_dict = {}
+    _enum_members = set()
+
+    def __new__(mcs, cls_name, bases, class_dict):
+        for member, value in class_dict.items():
+            if isinstance(value, ProjectException):
+                if value.code in ProjectErrorMetaClass._error_code_dict:
+                    prev_class, prev_member = ProjectErrorMetaClass._error_code_dict[value.code]
+                    raise ValueError(
+                        f"Both {prev_class}.{prev_member} and {cls_name}.{member} have error code {value.code}")
+                ProjectErrorMetaClass._error_code_dict[value.code] = cls_name, member
+                ProjectErrorMetaClass._enum_members.add(member)
+        return super().__new__(mcs, cls_name, bases, class_dict)
+
+    def __getattribute__(self, item):
+        super_item = super().__getattribute__(item)
+        if item in ProjectErrorMetaClass._enum_members:
+            return ProjectException(msg=super_item.msg, code=super_item.code, status_code=super_item.status_code)
+        return super_item
+
+    def __setattr__(self, key, value):
+        raise ValueError("Cannot set attributes to ProjectError")
+
+
+e = ProjectException
+
+
+class ProjectError(metaclass=ProjectErrorMetaClass):
+    """
+    错误类枚举
+    每个错误的值为一个元组，（错误名，自定义错误码, HTTP状态码）
+    其中HTTP状态码可以省略
+    HTTP状态码默认为422
+    """
+
+    SUCCESS = e("Success", 0, 200)
+    UNKNOWN_ERROR = e("Unknown error", 500, 500)
+    BAD_REQUEST = e("Bad request", 400, 400)
+    PERMISSION_DENIED = e("Permission denied", 403, 403)
+    NOT_FOUND = e("Resource not found", 404, 404)
+    METHOD_NOT_ALLOWED = e("Method not allowed", 405, 405)
+    UNPROCESSABLE = e("Unprocessable entity", 422, 422)
+    FIELD_MISSING = e("Field missing", 2)
+    WRONG_FIELD_TYPE = e("Invalid field type", 3)
+    NOT_ACCEPTABLE = e("Invalid content-type", 4)
+    INVALID_FIELD_VALUE = e("Invalid field value", 5)
+
+    def __new__(cls, *args, **kwargs):
+        raise TypeError("Cannot instantiate ProjectError or its subclasses")

@@ -1,9 +1,9 @@
 from django.test.client import Client
-from django_utils.error.error_code import ProjectError, ProjectException, ProjectErrorDetail
+from django_utils.error.error_code import ProjectError, ProjectException
 
 
 class _ProjectErrorTester:
-    def __init__(self, error: ProjectError = None, msg: str = None):
+    def __init__(self, error: ProjectException = None, msg: str = None):
         self._error = error
         self._msg = msg
 
@@ -16,8 +16,8 @@ class _ProjectErrorTester:
         if exc_type == ProjectException:
             if self._error is None:
                 return True
-            if exc_val.error != self._error:
-                msg = f"测试失败！未抛出{self._error.name}，抛出的异常为{exc_val.error.name}"
+            if exc_val.code != self._error.code:
+                msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__})，抛出的异常为{exc_val.msg} ({exc_val.__class__})"
                 raise AssertionError(msg) from None
             elif self._msg and self._msg not in str(exc_val):
                 raise AssertionError(f'测试失败！不包含错误信息"{self._msg}"')
@@ -35,9 +35,6 @@ def assert_error(error: ProjectError, msg: str = None) -> _ProjectErrorTester:
     :param error: ProjectError枚举
     :param msg: 要求必须包含的错误信息，用以区分具体的error
     """
-    if isinstance(error, ProjectErrorDetail):
-        msg = error.error_detail
-        error = error.error
     return _ProjectErrorTester(error, msg)
 
 

@@ -3,7 +3,7 @@ from django_utils.env import get_var
 
 
 class TestEnv(TestCase):
-    def test(self):
+    def test_env(self):
         a = get_var('a', is_string=False)
         b = get_var('b', is_string=False)
         c = get_var('c')

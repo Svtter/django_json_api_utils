@@ -1,4 +1,4 @@
-from django_utils.error import abort_with_error, ProjectError
+from django_utils.error import ProjectError
 from django_utils.req import json_field_getter, json_response, param_field_getter, multipart_getter
 
 
@@ -11,14 +11,14 @@ def functional_test_json_view(request):
 
 def functional_test_param_view(request):
     getter = param_field_getter(request)
-    a = getter('a', cast_to=int, allow_empty=False)
+    a = getter('a', required_type=int, allow_empty=False)
     b = getter('b')
     return json_response({'a': a, 'b': b})
 
 
 def functional_test_multipart_view(request):
     getter = multipart_getter(request)
-    a = getter('a', cast_to=int, allow_empty=False)
+    a = getter('a', required_type=int, allow_empty=False)
     b = getter('b')
     return json_response({'a': a, 'b': b})
 
@@ -27,7 +27,7 @@ def functional_test_other_view(request):
     getter = param_field_getter(request)
     t = getter('project_exception')
     if t:
-        abort_with_error(ProjectError.BAD_REQUEST)
+        raise ProjectError.BAD_REQUEST
     raise FileExistsError("Unknown Exception")
 
 

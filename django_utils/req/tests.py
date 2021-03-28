@@ -56,16 +56,16 @@ class HTTPRequestTest(TestCase):
             getter('c', allow_empty=False)
         # wrong field type
         with assert_error(ProjectError.WRONG_FIELD_TYPE, 'integer'):
-            getter('b', cast_to=int)
+            getter('b', required_type=int)
         # invalid value
         with assert_error(ProjectError.INVALID_FIELD_VALUE, '[a, b, c]'):
             getter('b', allowed_values=['a', 'b', 'c'])
         with assert_error(ProjectError.INVALID_FIELD_VALUE, '[1, 2, 3]'):
             getter('a', allowed_values=[1, 2, 3])
-        self.assertEqual(getter('c', cast_to=int, default=10), 10)
-        self.assertEqual(getter('a', cast_to=int, allow_empty=False), 0)
-        self.assertEqual(getter('d', cast_to=bool), True)
-        self.assertEqual(getter('b', cast_to=bool), False)
+        self.assertEqual(getter('c', required_type=int, default=10), 10)
+        self.assertEqual(getter('a', required_type=int, allow_empty=False), 0)
+        self.assertEqual(getter('d', required_type=bool), True)
+        self.assertEqual(getter('b', required_type=bool), False)
 
     def test_multipart_getter(self):
         with open('.gitignore', 'rb') as fp:
