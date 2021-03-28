@@ -31,7 +31,7 @@ class ProjectExceptionMiddleware:
             logger.error(traceback.format_exc())
             if settings.DEBUG:  # DEBUG模式下重新抛出
                 raise exception
-            exception = ProjectException(ProjectError.UNKNOWN_ERROR)
+            exception = ProjectError.UNKNOWN_ERROR
         else:
             logger.debug(traceback.format_exc())
             if settings.DEBUG:

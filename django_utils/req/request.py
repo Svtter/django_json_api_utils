@@ -2,7 +2,7 @@ import json
 from functools import partial
 from functools import wraps
 from django.http import HttpRequest
-from django_utils.error import ProjectError, abort_with_error
+from django_utils.error import ProjectError
 from django.core.exceptions import TooManyFieldsSent
 
 
@@ -44,11 +44,11 @@ def get_json_field(request, field, required_type=object, allow_empty=False, allo
             if request.body:
                 json_data = json.loads(request.body)
                 if not isinstance(json_data, dict):
-                    abort_with_error(ProjectError.NOT_ACCEPTABLE("Request body must be a valid json object"))
+                    raise ProjectError.NOT_ACCEPTABLE("Request body must be a valid json object")
         except TypeError:
-            abort_with_error(ProjectError.NOT_ACCEPTABLE("Content-Type must be application/json"))
+            raise ProjectError.NOT_ACCEPTABLE("Content-Type must be application/json")
         except json.JSONDecodeError:
-            abort_with_error(ProjectError.NOT_ACCEPTABLE("Invalid json object"))
+            raise ProjectError.NOT_ACCEPTABLE("Invalid json object")
     else:
         json_data = getattr(request, attr)
     value = json_data.get(field)
@@ -57,8 +57,7 @@ def get_json_field(request, field, required_type=object, allow_empty=False, allo
             value = None  # 空白值也认为是None
     if value is None:
         if not allow_empty:
-            abort_with_error(ProjectError.FIELD_MISSING,
-                             error_detail=f"Field {field} is either missing or empty")
+            raise ProjectError.FIELD_MISSING(f"Field {field} is either missing or empty")
         return default
     else:
         if isinstance(value, int) and required_type == float:
@@ -68,11 +67,10 @@ def get_json_field(request, field, required_type=object, allow_empty=False, allo
                 if value not in allowed_values:
                     allowed_values_msg = ", ".join(map(lambda x: str(x), allowed_values))
                     msg = f'Value of field "{field}" should be one of [{allowed_values_msg}]'
-                    abort_with_error(ProjectError.INVALID_FIELD_VALUE, error_detail=msg)
+                    raise ProjectError.INVALID_FIELD_VALUE(msg)
 
             return value
-        abort_with_error(ProjectError.WRONG_FIELD_TYPE,
-                         error_detail=f'Field"{field}" should be {_get_type_name(required_type)}')
+        raise ProjectError.WRONG_FIELD_TYPE(f'Field"{field}" should be {_get_type_name(required_type)}')
 
 
 def json_field_getter(request: HttpRequest):
@@ -103,7 +101,7 @@ def get_multipart_field(request: HttpRequest, field, required_type=bytes, allow_
         if required_type == list and allowed_values:
             raise TypeError('Cannot use "allowed_values" when required_type is list')
         if not request.content_type.startswith('multipart/form-data'):
-            abort_with_error(ProjectError.NOT_ACCEPTABLE, "Content-Type must be multipart/form-data")
+            raise ProjectError.NOT_ACCEPTABLE("Content-Type must be multipart/form-data")
         if required_type == bytes:
             value = request.FILES.get(field)
         elif required_type == list:
@@ -115,8 +113,7 @@ def get_multipart_field(request: HttpRequest, field, required_type=bytes, allow_
             if not value:
                 value = None
         if value is None and not allow_empty:
-            abort_with_error(ProjectError.FIELD_MISSING,
-                             error_detail=f'field "{field}" is missing')
+            raise ProjectError.FIELD_MISSING(f'field "{field}" is missing')
         elif value is None and allow_empty:
             return default
         if required_type not in (list, bytes):
@@ -124,15 +121,13 @@ def get_multipart_field(request: HttpRequest, field, required_type=bytes, allow_
                 value = required_type(value)
                 if allowed_values is not None and value not in allowed_values:
                     msg = f'Value of field "{field}" should be one of [{",".join(allowed_values)}].'
-                    abort_with_error(ProjectError.INVALID_FIELD_VALUE, error_detail=msg)
+                    raise ProjectError.INVALID_FIELD_VALUE(msg)
             except (ValueError, TypeError):
-                abort_with_error(ProjectError.WRONG_FIELD_TYPE,
-                                 error_detail='Field "%(field)s" should be %(required_type)s.') % {
-                    'field': field, 'required_type': _get_type_name(required_type)}
+                raise ProjectError.WRONG_FIELD_TYPE(f'Field "{field}" should be {_get_type_name(required_type)}.')
             return value
         return value
     except TooManyFieldsSent:
-        abort_with_error(ProjectError.UNPROCESSABLE, "Too many fields sent")
+        raise ProjectError.UNPROCESSABLE("Too many fields sent")
 
 
 def multipart_getter(request: HttpRequest):
@@ -165,16 +160,15 @@ def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_
                 else:
                     value = required_type(value)
             except (TypeError, ValueError):
-                abort_with_error(ProjectError.WRONG_FIELD_TYPE,
-                                 error_detail=f'Field "{field}" must be {_get_type_name(required_type)}')
+                raise ProjectError.WRONG_FIELD_TYPE(f'Field "{field}" must be {_get_type_name(required_type)}')
 
     if value is None:
         if allow_empty:
             return default
-        abort_with_error(ProjectError.FIELD_MISSING, error_detail=f"Field {field} is either missing of empty")
+        raise ProjectError.FIELD_MISSING(f"Field {field} is either missing of empty")
     elif allowed_values is not None and value not in allowed_values:
         msg = f'Value of field {field} cannot only be one of[{", ".join(map(lambda x: str(x), allowed_values))}]'
-        abort_with_error(ProjectError.INVALID_FIELD_VALUE, error_detail=msg)
+        raise ProjectError.INVALID_FIELD_VALUE(msg)
     else:
         return value
 
@@ -188,8 +182,7 @@ def require_methods_api(request_methods_list):
         @wraps(func)
         def inner(request, *args, **kwargs):
             if request.method not in request_methods_list:
-                abort_with_error(error=ProjectError.METHOD_NOT_ALLOWED,
-                                 error_detail=f"不允许{request.method}方法")
+                raise ProjectError.METHOD_NOT_ALLOWED(f"不允许{request.method}方法")
             return func(request, *args, **kwargs)
 
         return inner

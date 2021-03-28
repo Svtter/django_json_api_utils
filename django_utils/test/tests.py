@@ -8,13 +8,13 @@ class TestTestCase(TestCase):
     def test_assert_error(self):
         try:
             with assert_error(ProjectError.BAD_REQUEST):
-                raise ProjectException(ProjectError.BAD_REQUEST)
+                raise ProjectError.BAD_REQUEST
         except ProjectException:
             self.fail("assert_error failed to catch ProjectException!")
 
         try:
             with assert_error(ProjectError.BAD_REQUEST):
-                raise ProjectException(ProjectError.UNKNOWN_ERROR)
+                raise ProjectError.UNKNOWN_ERROR
         except AssertionError:
             pass
         except Exception:
@@ -24,13 +24,13 @@ class TestTestCase(TestCase):
 
         try:
             with assert_error(ProjectError.UNPROCESSABLE, "abc"):
-                raise ProjectException(ProjectError.UNPROCESSABLE("123123abc123123"))
+                raise ProjectError.UNPROCESSABLE("123123abc123123")
         except Exception:
             self.fail("assert_error failed to process error message")
 
         try:
             with assert_error(ProjectError.UNPROCESSABLE, "abc"):
-                raise ProjectException(ProjectError.UNPROCESSABLE("123"))
+                raise ProjectError.UNPROCESSABLE("123")
         except AssertionError:
             pass
         except Exception:

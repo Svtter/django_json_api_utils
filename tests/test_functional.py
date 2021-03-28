@@ -10,7 +10,7 @@ class TestFunctional(TestCase):
         res = self.client.post(view, data, content_type='application/json')
         self.assertEqual(res.json()['data'], data)
         res = self.client.post(view, {}, content_type='application/json')
-        self.assertEqual(res.json()['code'], ProjectError.FIELD_MISSING.error_code)
+        self.assertEqual(res.json()['code'], ProjectError.FIELD_MISSING.code)
 
     def test_param(self):
         view = reverse('param')
@@ -18,7 +18,7 @@ class TestFunctional(TestCase):
         res = self.client.get(view, data)
         self.assertEqual(res.json()['data'], data)
         res = self.client.get(view, {})
-        self.assertEqual(res.json()['code'], ProjectError.FIELD_MISSING.error_code)
+        self.assertEqual(res.json()['code'], ProjectError.FIELD_MISSING.code)
 
     def test_multipart(self):
         with open('.gitignore', 'rb') as fp:
@@ -32,9 +32,9 @@ class TestFunctional(TestCase):
     def test_other(self):
         view = reverse('other')
         res = self.client.get(view, data={'project_exception': True})
-        self.assertEqual(res.json()['code'], ProjectError.BAD_REQUEST.error_code)
+        self.assertEqual(res.json()['code'], ProjectError.BAD_REQUEST.code)
         self.assertEqual(res.status_code, ProjectError.BAD_REQUEST.status_code)
         res = self.client.get(view)
-        self.assertEqual(res.json()['code'], ProjectError.UNKNOWN_ERROR.error_code)
+        self.assertEqual(res.json()['code'], ProjectError.UNKNOWN_ERROR.code)
         self.assertEqual(res.status_code, 500)
         # TODO 检查日志

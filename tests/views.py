@@ -1,4 +1,4 @@
-from django_utils.error import abort_with_error, ProjectError
+from django_utils.error import ProjectError
 from django_utils.req import json_field_getter, json_response, param_field_getter, multipart_getter
 
 
@@ -27,7 +27,7 @@ def functional_test_other_view(request):
     getter = param_field_getter(request)
     t = getter('project_exception')
     if t:
-        abort_with_error(ProjectError.BAD_REQUEST)
+        raise ProjectError.BAD_REQUEST
     raise FileExistsError("Unknown Exception")
 
 
