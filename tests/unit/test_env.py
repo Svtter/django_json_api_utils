@@ -1,5 +1,5 @@
 from django.test import TestCase
-from django_utils.env import get_var
+from djapi.env import get_var
 
 
 class TestEnv(TestCase):

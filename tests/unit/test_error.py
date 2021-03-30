@@ -1,11 +1,11 @@
 import json
-from django_utils.error.error_code import ProjectError, ProjectException
-from django_utils.error.error_handler import ModelExceptionHandler
-from django_utils.error.middleware import ProjectExceptionMiddleware
+from djapi.error.error_code import ProjectError, ProjectException
+from djapi.error.error_handler import ModelExceptionHandler
+from djapi.error.middleware import ProjectExceptionMiddleware
 from django.test import TestCase, RequestFactory
 from django.conf import settings
 from tests.models import ModelForTesting
-from django_utils.test.testcase import assert_error
+from djapi.test.testcase import assert_error
 
 
 class TestError(TestCase):

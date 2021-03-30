@@ -1,4 +1,4 @@
-from django_utils.error.error_code import ProjectError
+from djapi.error.error_code import ProjectError
 from django.db import IntegrityError
 from django.db.models import ObjectDoesNotExist
 

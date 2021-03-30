@@ -1,5 +1,5 @@
 from django.test.client import Client
-from django_utils.error.error_code import ProjectError, ProjectException
+from djapi.error.error_code import ProjectError, ProjectException
 
 
 class _ProjectErrorTester:
@@ -26,7 +26,7 @@ class _ProjectErrorTester:
         return True
 
 
-def assert_error(error: ProjectError, msg: str = None) -> _ProjectErrorTester:
+def assert_error(error: ProjectException, msg: str = None) -> _ProjectErrorTester:
     """
     生成一个_projectErrorTester上下文管理器，用来
     断言with块内的代码一定抛出包含给定的ProjectError的ProjectException异常，

@@ -1,7 +1,7 @@
 from django.shortcuts import reverse
 from django.test import TestCase, Client
-from django_utils.test.testcase import assert_error, JSONClient
-from django_utils.error.error_code import ProjectError, ProjectException
+from djapi.test.testcase import assert_error, JSONClient
+from djapi.error.error_code import ProjectError, ProjectException
 
 
 class TestTestCase(TestCase):

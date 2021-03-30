@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'check format..'
                 sh 'venv/bin/pip install -q flake8'
-                sh 'venv/bin/flake8 --max-line-length=120 django_utils'
+                sh 'venv/bin/flake8 --max-line-length=120 djapi'
                 sh 'venv/bin/flake8 --max-line-length=120 tests'
             }
             post {
@@ -48,7 +48,7 @@ pipeline {
         stage('test') {
             steps {
                 echo 'test....'
-                sh 'venv/bin/pytest --cov-report=html:cov_html --cov=django_utils --cov=tests'
+                sh 'venv/bin/pytest --cov-report=html:cov_html --cov=djapi --cov=tests'
             }
             post {
                 success {

@@ -1,5 +1,5 @@
-from django_utils.error import ProjectError
-from django_utils.req import json_field_getter, json_response, param_field_getter, multipart_getter
+from djapi.error import ProjectError
+from djapi.req import json_field_getter, json_response, param_field_getter, multipart_getter
 
 
 def functional_test_json_view(request):

@@ -1,7 +1,7 @@
 from django.test import TestCase
-from django_utils.test import assert_error
-from django_utils.error import ProjectError
-from django_utils.req import param_field_getter, json_field_getter, multipart_getter
+from djapi.test import assert_error
+from djapi.error import ProjectError
+from djapi.req import param_field_getter, json_field_getter, multipart_getter
 from django.test.client import RequestFactory
 
 

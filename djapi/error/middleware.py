@@ -4,7 +4,9 @@ import json
 
 from django.conf import settings
 from django.http import HttpResponse
-from django_utils.error.error_code import ProjectError, ProjectException
+from djapi.error.error_code import ProjectError, ProjectException
+
+__all__ = ['ProjectError', 'ProjectException', 'ProjectExceptionMiddleware']
 
 logger = logging.getLogger('django')
 

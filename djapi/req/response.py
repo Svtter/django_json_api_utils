@@ -1,5 +1,7 @@
-from django_utils.error import ProjectError
+from djapi.error import ProjectError
 from django.http import JsonResponse
+
+__all__ = ['json_response']
 
 
 def json_response(data=None, status_code: int = 200) -> JsonResponse:

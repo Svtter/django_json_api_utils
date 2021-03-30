@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.shortcuts import reverse
-from django_utils.error.error_code import ProjectError
+from djapi.error.error_code import ProjectError
 
 
 class TestFunctional(TestCase):
