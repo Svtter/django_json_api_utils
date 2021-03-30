@@ -1,5 +1,5 @@
 from django.test.client import Client
-from djapi.error.error_code import ProjectError, ProjectException
+from djapi.error.error_code import ProjectException
 
 
 class _ProjectErrorTester:
