@@ -16,7 +16,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'For testing purposes only!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ROOT_URLCONF = 'conf.urls'
 ALLOWED_HOSTS = []
 
@@ -65,17 +65,29 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
-        }
-
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'propagate': True,
-            'level': 'INFO'
-        }
+            'level': 'DEBUG'
+        },
+        'django.db.backends': {
+            'handlers': ['null'],
+            'propagate': False,
+            'level': 'DEBUG',
+        },
     }
 }
+MEDIA_URL = '/'
+STATIC_URL = '/'
+STATIC_ROOT = os.path.join('BASE_DIR', 'static')
+MEDIA_ROOT = STATIC_ROOT

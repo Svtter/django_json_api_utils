@@ -1,1 +1,1 @@
-from djapi.test.testcase import assert_error, JSONClient  # noqa
+from djapi.test.testcase import assert_error, JSONClient,patch_json  # noqa

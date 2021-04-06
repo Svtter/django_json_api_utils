@@ -1,12 +1,20 @@
-from django.test import TestCase
-from djapi.test import assert_error
+import os
+from django.test import LiveServerTestCase
+from djapi.test import assert_error, patch_json
 from djapi.error import ProjectError
-from djapi.req import param_field_getter, json_field_getter, multipart_getter
+from djapi.req import param_field_getter, json_field_getter, multipart_getter, JSONRequester
 from django.test.client import RequestFactory
+from django.shortcuts import reverse
+from unittest.mock import patch, MagicMock
 
 
-class HTTPRequestTest(TestCase):
+class HTTPRequestTest(LiveServerTestCase):
     factory = RequestFactory()
+
+    def setUp(self) -> None:
+        os.environ.pop('http_proxy', None)
+        os.environ.pop('https_proxy', None)
+        os.environ.pop('all_proxy', None)
 
     def test_get_json_field(self):
         request = self.factory.get('')
@@ -85,3 +93,67 @@ class HTTPRequestTest(TestCase):
             fp.seek(0)
             d = fp.read()
             self.assertEqual(d, getter('file', required_type=bytes).read())
+
+    @patch("requests.delete")
+    @patch("requests.patch")
+    @patch("requests.post")
+    @patch("requests.get")
+    def test_json_requester_mocked(self, get: MagicMock, post: MagicMock, patch: MagicMock, delete: MagicMock):
+        self.assertRaises(ValueError, JSONRequester, False, True)
+        success = {'code': 0, 'msg': 'success', 'data': {'a': 1}}
+        patch_json(get, success)
+        patch_json(post, success)
+        patch_json(delete, success)
+        patch_json(patch, success)
+        j = JSONRequester()
+        j.get('')
+        j.post('', json={})
+        j.delete('')
+        j.patch('')
+        error = ProjectError.PERMISSION_DENIED.to_dict()
+        patch_json(get, error)
+        patch_json(post, error)
+        patch_json(delete, error)
+        patch_json(patch, error)
+        with assert_error(ProjectError.PERMISSION_DENIED):
+            j.get('')
+        with assert_error(ProjectError.PERMISSION_DENIED):
+            j.post('')
+        with assert_error(ProjectError.PERMISSION_DENIED):
+            j.delete('')
+        with assert_error(ProjectError.PERMISSION_DENIED):
+            j.patch('')
+        self.assertEqual(j.msg, error['msg'])
+
+        error = ProjectError.WRONG_FIELD_TYPE.to_dict()
+        error['code'] = 1312321312321
+        patch_json(get, error)
+        patch_json(post, error)
+        patch_json(delete, error)
+        patch_json(patch, error)
+        with assert_error(ProjectError.REMOTE_SERVER_ERROR):
+            j.get('')
+        with assert_error(ProjectError.REMOTE_SERVER_ERROR):
+            j.post('')
+        with assert_error(ProjectError.REMOTE_SERVER_ERROR):
+            j.delete('')
+        with assert_error(ProjectError.REMOTE_SERVER_ERROR):
+            j.patch('')
+
+        j = JSONRequester(raise_on_error_code=False)
+        j.get('')
+        j.post('')
+        j.patch('')
+        j.delete('')
+
+    def test_json_requester_live(self):
+        view = reverse('json_requester')
+        j = JSONRequester()
+        url = f"{self.live_server_url}{view}"
+        j.post(url, json={'a': 'fnf23oif'})
+        self.assertTrue(j.data, {'a': 'fnf23oif'})
+        with assert_error(ProjectError.FIELD_MISSING, "a"):
+            j.post(url, json={})
+
+        with assert_error(ProjectError.REMOTE_SERVER_ERROR):
+            j.post('http://fasfdsfasd')

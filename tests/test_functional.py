@@ -1,9 +1,16 @@
-from django.test import TestCase
+import os
+from django.test import LiveServerTestCase
 from django.shortcuts import reverse
 from djapi.error.error_code import ProjectError
+from djapi.req import JSONRequester
 
 
-class TestFunctional(TestCase):
+class TestFunctional(LiveServerTestCase):
+    def setUp(self) -> None:
+        os.environ.pop('http_proxy', None)
+        os.environ.pop('https_proxy', None)
+        os.environ.pop('all_proxy', None)
+
     def test_json(self):
         view = reverse('json')
         data = {'a': 1, 'b': 'abc'}
@@ -38,3 +45,11 @@ class TestFunctional(TestCase):
         self.assertEqual(res.json()['code'], ProjectError.UNKNOWN_ERROR.code)
         self.assertEqual(res.status_code, 500)
         # TODO 检查日志
+
+    def test_json_requester(self):
+        view = reverse('json_requester')
+        j = JSONRequester()
+        url = f"{self.live_server_url}{view}"
+        data = {'a': 'afsdfsdfsdf'}
+        j.post(url, json=data)
+        self.assertTrue(j.data, data)

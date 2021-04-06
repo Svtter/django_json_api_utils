@@ -1,3 +1,4 @@
+from unittest.mock import MagicMock
 from django.test.client import Client
 from djapi.error.error_code import ProjectException
 
@@ -17,7 +18,8 @@ class _ProjectErrorTester:
             if self._error is None:
                 return True
             if exc_val.code != self._error.code:
-                msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__})，抛出的异常为{exc_val.msg} ({exc_val.__class__})"
+                msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__.__name__})，" \
+                      f"抛出的异常为{exc_val.msg} ({exc_val.__class__.__name__})"
                 raise AssertionError(msg) from None
             elif self._msg and self._msg not in str(exc_val):
                 raise AssertionError(f'测试失败！不包含错误信息"{self._msg}"')
@@ -70,3 +72,8 @@ class JSONClient(Client):
         res = super().post(path, data, follow=follow, secure=secure, **extra)
         self._set_response(res)
         return res
+
+
+def patch_json(method_mock: MagicMock, return_value):
+    method_mock.return_value = MagicMock()
+    method_mock.return_value.attach_mock(MagicMock(return_value=return_value), attribute='json')

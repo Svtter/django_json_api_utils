@@ -45,3 +45,9 @@ def functional_test_multipart(request):
     b = getter('b', required_type=str)
     c = getter('file')
     return json_response(dict(a=a, b=b, file=c.read().decode()))
+
+
+def test_json_requester(request):
+    getter = json_field_getter(request)
+    a = getter('a', str)
+    return json_response({'a': a, 'method': request.method})

@@ -76,7 +76,7 @@ def get_json_field(request, field, required_type=object, allow_empty=False, allo
                     raise ProjectError.INVALID_FIELD_VALUE(msg)
 
             return value
-        raise ProjectError.WRONG_FIELD_TYPE(f'Field"{field}" should be {_get_type_name(required_type)}')
+        raise ProjectError.WRONG_FIELD_TYPE(f'Field "{field}" should be {_get_type_name(required_type)}')
 
 
 def json_field_getter(request: HttpRequest):

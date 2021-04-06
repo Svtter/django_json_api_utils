@@ -16,6 +16,8 @@ class TestError(TestCase):
         except ProjectException as e:
             self.assertTrue(ProjectError.FIELD_MISSING.msg in str(e))
             self.assertTrue("This is a test" in str(e))
+        e = ProjectError.REMOTE_SERVER_ERROR
+        self.assertTrue(e.code, ProjectError[e.code].code)
 
     def test_middleware(self):
         request = RequestFactory()

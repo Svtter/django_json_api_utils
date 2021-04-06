@@ -22,4 +22,5 @@ urlpatterns = [
     path('functional_test_multipart', views.functional_test_multipart, name='multipart'),
     path('functional_test_other/', views.functional_test_other_view, name='other'),
     path('test_json_client/', views.test_json_client, name='json_client'),
+    path('test_json_requester/', views.test_json_requester, name='json_requester')
 ]

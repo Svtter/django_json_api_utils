@@ -12,6 +12,7 @@ class ProjectException(Exception):
         self.code = code
         self.status_code = status_code
         self.error_detail = None
+        self.secret_detail = None
 
     def to_dict(self):
         d = {'msg': self.msg, 'code': self.code, 'data': {}}
@@ -22,11 +23,14 @@ class ProjectException(Exception):
     def __str__(self):
         msg = self.msg
         if self.error_detail:
-            msg += f"({str(self.error_detail)})"
+            msg += f" ({self.error_detail})"
+        if self.secret_detail:
+            msg += f'\n{self.secret_detail}'
         return msg
 
-    def __call__(self, error_detail):
+    def __call__(self, error_detail=None, secret_detail=None):
         self.error_detail = error_detail
+        self.secret_detail = secret_detail
         return self
 
 
@@ -38,10 +42,10 @@ class ProjectErrorMetaClass(type):
         for member, value in class_dict.items():
             if isinstance(value, ProjectException):
                 if value.code in ProjectErrorMetaClass._error_code_dict:
-                    prev_class, prev_member = ProjectErrorMetaClass._error_code_dict[value.code]
+                    prev_class, prev_member, _ = ProjectErrorMetaClass._error_code_dict[value.code]
                     raise ValueError(
                         f"Both {prev_class}.{prev_member} and {cls_name}.{member} have error code {value.code}")
-                ProjectErrorMetaClass._error_code_dict[value.code] = cls_name, member
+                ProjectErrorMetaClass._error_code_dict[value.code] = cls_name, member, value
                 ProjectErrorMetaClass._enum_members.add(member)
         return super().__new__(mcs, cls_name, bases, class_dict)
 
@@ -53,6 +57,10 @@ class ProjectErrorMetaClass(type):
 
     def __setattr__(self, key, value):
         raise ValueError("Cannot set attributes to ProjectError")
+
+    def __getitem__(self, item: int) -> ProjectException:
+        super_item = self._error_code_dict[item][2]
+        return ProjectException(msg=super_item.msg, code=super_item.code, status_code=super_item.status_code)
 
 
 e = ProjectException
@@ -77,6 +85,7 @@ class ProjectError(metaclass=ProjectErrorMetaClass):
     WRONG_FIELD_TYPE = e("Invalid field type", 3)
     NOT_ACCEPTABLE = e("Invalid content-type", 4)
     INVALID_FIELD_VALUE = e("Invalid field value", 5)
+    REMOTE_SERVER_ERROR = e("Remote server error", 6, 503)
 
     def __new__(cls, *args, **kwargs):
         raise TypeError("Cannot instantiate ProjectError or its subclasses")

@@ -35,7 +35,10 @@ class ProjectExceptionMiddleware:
                 raise exception
             exception = ProjectError.UNKNOWN_ERROR
         else:
-            logger.debug(traceback.format_exc())
+            msg = traceback.format_exc()
+            if exception.secret_detail:
+                msg += f'\n{exception.secret_detail}'
+            logger.debug(msg)
             if settings.DEBUG:
                 raise
 
