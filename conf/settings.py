@@ -23,7 +23,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'tests'
+    'tests_djapi'
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,7 @@
 import os
-from ast import literal_eval
 import dotenv
+from ast import literal_eval
+from django.conf import settings
 
 __loaded = False
 
@@ -16,7 +17,7 @@ def get_var(name, is_string: bool = True, default=None):
         assert isinstance(default, str), "default must be a string"
     global __loaded
     if not __loaded:
-        dotenv.load_dotenv()
+        dotenv.load_dotenv(dotenv.find_dotenv(usecwd=settings.BASE_DIR))
         __loaded = True
     value = os.environ.get(name)
     if not value:
