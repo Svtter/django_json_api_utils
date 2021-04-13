@@ -5,20 +5,21 @@ __all__ = ['JSONRequester']
 
 
 class JSONRequester:
-    # def __init__(self, remote_host_port=None, remote_host=None, remote_port=None):
-    #     if remote_host_port:
-    #         if ':' not in remote_host_port:
-    #             raise ValueError('Remote_host_port must be "host:port"')
-    #         self._host, self._port = remote_host_port.split(':')
-    #     else:
-    #         if not remote_host and remote_port:
-    #             raise ValueError("Remote host is empty")
-    #         elif not remote_port and remote_host:
-    #             raise ValueError("Remote port is empty")
-    #         self._host, self._port = remote_host, remote_port
+    """
+    Calls remote json API and return data. If the remote server uses djapi, automatically processes error.
+    """
+
     def __init__(self, djapi=True, raise_on_error_code=True):
+        """
+        :param djapi: whether remote server uses djapi. if not, "code", "data" and "msg"
+                    will not be available, and response data can only be accessed by calling json()
+        :param raise_on_error_code: if remote server uses djapi,
+                    raise ProjectError when 'code' in response is not 0 (Success).
+                    if code is not defined in ProjectError, ProjectError.REMOTE_SERVER_ERROR will be raised,
+                    with original remote error message and error detail
+        """
         if not djapi and raise_on_error_code:
-            raise ValueError("Cannot use raise_on_error_code when djapi=False")
+            raise ValueError("Cannot use raise_on_error_code when djapi is False")
         self._djapi = djapi
         self._raise_on_error_code = raise_on_error_code
         self._resp = {}
@@ -34,19 +35,19 @@ class JSONRequester:
     @property
     def code(self):
         if not self._djapi:
-            raise ValueError("Cannot use attribute code when djapi=False")
+            raise ValueError("Cannot use attribute code when djapi is False")
         return self._code
 
     @property
     def data(self):
         if not self._djapi:
-            raise ValueError("Cannot use attribute data when djapi=False")
+            raise ValueError("Cannot use attribute data when djapi is False")
         return self._data
 
     @property
     def msg(self):
         if not self._djapi:
-            raise ValueError("Cannot use attribute msg when djapi=False")
+            raise ValueError("Cannot use attribute msg when djapi is False")
         return self._msg
 
     def _clean(self):

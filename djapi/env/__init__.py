@@ -21,7 +21,7 @@ def get_var(name, is_string: bool = True, default=None):
     value = os.environ.get(name)
     if not value:
         if default is None:
-            raise ValueError(f'"{name}" is not set')
+            raise ValueError(f'"{name}" is not set. Please check your .env file.')
         return default
     if is_string:
         return value
