@@ -29,7 +29,7 @@ pipeline {
                 echo 'check format..'
                 sh 'venv/bin/pip install -q flake8'
                 sh 'venv/bin/flake8 --max-line-length=120 djapi'
-                sh 'venv/bin/flake8 --max-line-length=120 tests'
+                sh 'venv/bin/flake8 --max-line-length=120 tests_djapi'
             }
             post {
                 failure {
