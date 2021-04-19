@@ -16,8 +16,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'For testing purposes only!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ROOT_URLCONF = 'conf.urls'
+DEBUG = True
+ROOT_URLCONF = 'conf_test.urls'
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -30,7 +30,7 @@ MIDDLEWARE = [
     'djapi.error.middleware.ProjectExceptionMiddleware',
 ]
 
-WSGI_APPLICATION = 'conf.wsgi.application'
+WSGI_APPLICATION = 'conf_test.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases

@@ -18,7 +18,7 @@ class ModelExceptionHandler:
             # self._display_name = exc_val.split()[0]
             raise ProjectError.NOT_FOUND(f"{self._display_name}不存在")
         if exc_type == IntegrityError:
-            if 'UNIQUE' in exc_val:
+            if 'UNIQUE' in exc_val or 'Duplicate':
                 print(exc_val)
                 raise ProjectError.UNPROCESSABLE(f"{self._display_name}已经存在")
             return False
