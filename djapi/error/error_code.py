@@ -7,15 +7,16 @@ class ProjectException(Exception):
     def __new__(cls, *args, **kwargs):
         return super().__new__(cls, *args, **kwargs)
 
-    def __init__(self, msg: str, code: int, status_code: int = 422):
+    def __init__(self, msg: str, code: int, status_code: int = 422, data=None):
         self.msg = msg
         self.code = code
         self.status_code = status_code
         self.error_detail = None
         self.secret_detail = None
+        self.data = data or {}
 
     def to_dict(self):
-        d = {'msg': self.msg, 'code': self.code, 'data': {}}
+        d = {'msg': self.msg, 'code': self.code, 'data': self.data}
         if self.error_detail:
             d['error_detail'] = self.error_detail
         return d
@@ -28,10 +29,15 @@ class ProjectException(Exception):
             msg += f'\n{self.secret_detail}'
         return msg
 
-    def __call__(self, error_detail=None, secret_detail=None):
+    def __call__(self, error_detail=None, secret_detail=None, data=None):
         self.error_detail = error_detail
         self.secret_detail = secret_detail
+        if data:
+            self.data = data
         return self
+
+    def __eq__(self, other: 'ProjectException'):
+        return self.code == other.code
 
 
 class ProjectErrorMetaClass(type):

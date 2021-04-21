@@ -2,8 +2,8 @@ import logging
 import traceback
 import json
 
-from django.conf import settings
 from django.http import HttpResponse
+from djapi.env import get_var
 from djapi.error.error_code import ProjectError, ProjectException
 
 __all__ = ['ProjectError', 'ProjectException', 'ProjectExceptionMiddleware']
@@ -31,7 +31,7 @@ class ProjectExceptionMiddleware:
         if not isinstance(exception, ProjectException):
             # 未知异常，记录异常栈
             logger.error(traceback.format_exc())
-            if settings.DEBUG:  # DEBUG模式下重新抛出
+            if get_var("RE_RAISE_UNKNOWN_EXCEPTIONS", is_string=False, default=False):
                 raise exception
             exception = ProjectError.UNKNOWN_ERROR
         else:
@@ -39,9 +39,6 @@ class ProjectExceptionMiddleware:
             if exception.secret_detail:
                 msg += f'\n{exception.secret_detail}'
             logger.debug(msg)
-            if settings.DEBUG:
-                raise
-
         r = HttpResponse(json.dumps(exception.to_dict(), ensure_ascii=False),
                          content_type='application/json; charset=utf-8')
         r.status_code = exception.status_code
