@@ -1,42 +1,32 @@
 from django.shortcuts import reverse
 from django.test import TestCase, Client
 from djapi.test.testcase import assert_error, JSONClient
-from djapi.error.error_code import ProjectError, ProjectException
+from djapi.error.error_code import ProjectError
 
 
 class TestTestCase(TestCase):
     def test_assert_error(self):
-        try:
-            with assert_error(ProjectError.BAD_REQUEST):
-                raise ProjectError.BAD_REQUEST
-        except ProjectException:
-            self.fail("assert_error failed to catch ProjectException!")
+        with assert_error(ProjectError.BAD_REQUEST):
+            raise ProjectError.BAD_REQUEST
 
-        try:
+        with self.assertRaises(AssertionError):
             with assert_error(ProjectError.BAD_REQUEST):
                 raise ProjectError.UNKNOWN_ERROR
-        except AssertionError:
-            pass
-        except Exception:
-            self.fail("assert_error failed to raise AssertError")
-        else:
-            self.fail("assert_error failed to raise AssertError")
+        with assert_error(ProjectError.INVALID_FIELD_VALUE, ["a", "b", "c"]):
+            raise ProjectError.INVALID_FIELD_VALUE("abc")
+        with self.assertRaises(AssertionError):
+            with assert_error(ProjectError.INVALID_FIELD_VALUE, ["a", "b", "c"]):
+                raise ProjectError.INVALID_FIELD_VALUE("ab123")
 
-        try:
-            with assert_error(ProjectError.UNPROCESSABLE, "abc"):
-                raise ProjectError.UNPROCESSABLE("123123abc123123")
-        except Exception:
-            self.fail("assert_error failed to process error message")
-
-        try:
-            with assert_error(ProjectError.UNPROCESSABLE, "abc"):
-                raise ProjectError.UNPROCESSABLE("123")
-        except AssertionError:
-            pass
-        except Exception:
-            self.fail("assert_error failed to process error message")
-        else:
-            self.fail("assert_error failed to process error message")
+        with assert_error(ProjectError.UNPROCESSABLE, "abc"):
+            raise ProjectError.UNPROCESSABLE("123123abc123123")
+        with assert_error(ProjectError.INVALID_FIELD_VALUE, ["a", "b", "c"]):
+            raise ProjectError.INVALID_FIELD_VALUE("abc")
+        with assert_error(ProjectError.INVALID_FIELD_VALUE, msg_pattern=r"abc.*list\?+"):
+            raise ProjectError.INVALID_FIELD_VALUE("123123abcufiahdfulist??")
+        with self.assertRaises(AssertionError):
+            with assert_error(ProjectError.INVALID_FIELD_VALUE, msg_pattern="a.*b"):
+                raise ProjectError.INVALID_FIELD_VALUE("123")
 
     def test_json_client(self):
         client = JSONClient()

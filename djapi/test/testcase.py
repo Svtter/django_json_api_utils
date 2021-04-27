@@ -1,12 +1,15 @@
 from unittest.mock import MagicMock
 from django.test.client import Client
 from djapi.error.error_code import ProjectException
+from typing import Union, List
+import re
 
 
 class _ProjectErrorTester:
-    def __init__(self, error: ProjectException = None, msg: str = None):
+    def __init__(self, error: ProjectException = None, msg: Union[List[str], str] = None, msgr: str = None):
         self._error = error
         self._msg = msg
+        self._msgr = msgr
 
     def __enter__(self):
         pass
@@ -21,14 +24,27 @@ class _ProjectErrorTester:
                 msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__.__name__})，" \
                       f"抛出的异常为{exc_val.msg} ({exc_val.__class__.__name__})"
                 raise AssertionError(msg) from None
-            elif self._msg and self._msg not in str(exc_val):
-                raise AssertionError(f'测试失败！不包含错误信息"{self._msg}"')
+            else:
+                if self._msg:
+                    error = f'不包含错误信息"{self._msg}"'
+                    if isinstance(self._msg, list):
+                        match = all([x in str(exc_val) for x in self._msg])
+                    else:
+                        match = self._msg in str(exc_val)
+                elif self._msgr:
+                    error = f'错误信息不匹配"{self._msgr}"'
+                    match = re.search(self._msgr, str(exc_val))
+                else:
+                    return True
+                if not match:
+                    raise AssertionError(f'测试失败！{error}，原始错误信息为"{str(exc_val)}"')
         else:
             raise AssertionError("测试失败！未抛出ProjectException！")
         return True
 
 
-def assert_error(error: ProjectException, msg: str = None) -> _ProjectErrorTester:
+def assert_error(error: ProjectException, msg: Union[List[str], str] = None,
+                 msg_pattern: str = None) -> _ProjectErrorTester:
     """
     生成一个_projectErrorTester上下文管理器，用来
     断言with块内的代码一定抛出包含给定的ProjectError的ProjectException异常，
@@ -36,8 +52,9 @@ def assert_error(error: ProjectException, msg: str = None) -> _ProjectErrorTeste
 
     :param error: ProjectError枚举
     :param msg: 要求必须包含的错误信息，用以区分具体的error
+    :param msg_pattern: msg正则匹配
     """
-    return _ProjectErrorTester(error, msg)
+    return _ProjectErrorTester(error, msg, msg_pattern)
 
 
 class JSONClient(Client):
