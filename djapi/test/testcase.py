@@ -22,7 +22,7 @@ class _ProjectErrorTester:
                 return True
             if exc_val.code != self._error.code:
                 msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__.__name__})，" \
-                      f"抛出的异常为{exc_val.msg} ({exc_val.__class__.__name__})"
+                      f"抛出的异常为{str(exc_val)} ({exc_val.__class__.__name__})"
                 raise AssertionError(msg) from None
             else:
                 if self._msg:
