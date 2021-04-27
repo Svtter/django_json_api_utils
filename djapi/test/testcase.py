@@ -17,6 +17,8 @@ class _ProjectErrorTester:
     def __exit__(self, exc_type, exc_val: ProjectException, exc_tb):
         if exc_type is None:
             raise AssertionError("测试失败！未抛出任何异常！")
+        if exc_type != ProjectException:
+            raise AssertionError("测试失败！未抛出ProjectException！")
         if exc_type == ProjectException:
             if self._error is None:
                 return True
@@ -24,22 +26,20 @@ class _ProjectErrorTester:
                 msg = f"测试失败！未抛出{self._error.msg} ({self._error.__class__.__name__})，" \
                       f"抛出的异常为{str(exc_val)} ({exc_val.__class__.__name__})"
                 raise AssertionError(msg) from None
-            else:
-                if self._msg:
-                    error = f'不包含错误信息"{self._msg}"'
-                    if isinstance(self._msg, list):
-                        match = all([x in str(exc_val) for x in self._msg])
-                    else:
-                        match = self._msg in str(exc_val)
-                elif self._msgr:
-                    error = f'错误信息不匹配"{self._msgr}"'
-                    match = re.search(self._msgr, str(exc_val))
-                else:
-                    return True
-                if not match:
-                    raise AssertionError(f'测试失败！{error}，原始错误信息为"{str(exc_val)}"')
-        else:
-            raise AssertionError("测试失败！未抛出ProjectException！")
+            error_msg = ""
+            match = True
+            if self._msg:
+                error_msg = f'不包含错误信息"{self._msg}"'
+                if isinstance(self._msg, str):
+                    self._msg = [self._msg]
+                # 要求错误信息包含所有给定的字符串
+                match = all([x in str(exc_val) for x in self._msg])
+            elif self._msgr:
+                error_msg = f'错误信息不匹配"{self._msgr}"'
+                match = re.search(self._msgr, str(exc_val))
+            if not match:
+                raise AssertionError(f'测试失败！{error_msg}，原始错误信息为"{str(exc_val)}"')
+
         return True
 
 

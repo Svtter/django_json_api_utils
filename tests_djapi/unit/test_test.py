@@ -18,12 +18,12 @@ class TestTestCase(TestCase):
             with assert_error(ProjectError.INVALID_FIELD_VALUE, ["a", "b", "c"]):
                 raise ProjectError.INVALID_FIELD_VALUE("ab123")
 
-        with assert_error(ProjectError.UNPROCESSABLE, "abc"):
-            raise ProjectError.UNPROCESSABLE("123123abc123123")
+        with assert_error(ProjectError.UNPROCESSABLE, "供应商"):
+            raise ProjectError.UNPROCESSABLE("找不到供应商(sap_code=123)")
         with assert_error(ProjectError.INVALID_FIELD_VALUE, ["a", "b", "c"]):
             raise ProjectError.INVALID_FIELD_VALUE("abc")
-        with assert_error(ProjectError.INVALID_FIELD_VALUE, msg_pattern=r"abc.*list\?+"):
-            raise ProjectError.INVALID_FIELD_VALUE("123123abcufiahdfulist??")
+        with assert_error(ProjectError.INVALID_FIELD_VALUE, msg_pattern=r"供应商.+123.*\!+"):
+            raise ProjectError.INVALID_FIELD_VALUE("找不到供应商(sap_code=123)!")
         with self.assertRaises(AssertionError):
             with assert_error(ProjectError.INVALID_FIELD_VALUE, msg_pattern="a.*b"):
                 raise ProjectError.INVALID_FIELD_VALUE("123")
