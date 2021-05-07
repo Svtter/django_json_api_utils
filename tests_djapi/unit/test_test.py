@@ -50,5 +50,5 @@ class TestTestCase(TestCase):
         b = {'b': '2', 'c': [1, 2, 3]}
         c = {'b': '3'}
         assertDictContainsSubset(self, a, b)
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             assertDictContainsSubset(self, a, c)
