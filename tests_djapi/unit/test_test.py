@@ -1,6 +1,6 @@
 from django.shortcuts import reverse
 from django.test import TestCase, Client
-from djapi.test.testcase import assert_error, JSONClient
+from djapi.test.testcase import assert_error, JSONClient, assertDictContainsSubset
 from djapi.error.error_code import ProjectError
 
 
@@ -44,3 +44,11 @@ class TestTestCase(TestCase):
         self.assertEqual(client.code, 0)
         self.assertEqual(res.content, res_expected.content)
         self.assertEqual(client.data, {'a': 1, 'b': [1, 2, 3], 'c': {'a': 1, 'b': 'b'}})
+
+    def test_assert_dict_contains_subset(self):
+        a = {'a': 1, 'b': '2', 'c': [1, 2, 3]}
+        b = {'b': '2', 'c': [1, 2, 3]}
+        c = {'b': '3'}
+        assertDictContainsSubset(self, a, b)
+        with self.assertRaises(Exception):
+            assertDictContainsSubset(self, a, c)

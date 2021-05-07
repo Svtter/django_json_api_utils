@@ -1,6 +1,7 @@
 from djapi.error.error_code import ProjectError
 from django.db import IntegrityError
 from django.db.models import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned
 
 
 class ModelExceptionHandler:
@@ -22,4 +23,6 @@ class ModelExceptionHandler:
             if 'UNIQUE' in exc_val or 'Duplicate' in exc_val or 'duplicate' in exc_val:
                 raise ProjectError.UNPROCESSABLE(f"{self._display_name}已经存在")
             return False
+        elif issubclass(exc_type, MultipleObjectsReturned):
+            raise ProjectError.UNPROCESSABLE(f"多条记录满足{self._display_name}，请缩小查询范围")
         return False

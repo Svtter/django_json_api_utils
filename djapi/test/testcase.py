@@ -1,5 +1,5 @@
 from unittest.mock import MagicMock
-from django.test.client import Client
+from django.test import TestCase, Client
 from djapi.error.error_code import ProjectException
 from typing import Union, List
 import re
@@ -94,3 +94,7 @@ class JSONClient(Client):
 def patch_json(method_mock: MagicMock, return_value):
     method_mock.return_value = MagicMock()
     method_mock.return_value.attach_mock(MagicMock(return_value=return_value), attribute='json')
+
+
+def assertDictContainsSubset(testcase: TestCase, dict_a, dict_b):
+    testcase.assertEqual(dict(dict_a, **dict_b), dict_a, "Does not contain subset!")
