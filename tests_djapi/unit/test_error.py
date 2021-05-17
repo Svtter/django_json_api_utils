@@ -42,7 +42,7 @@ class TestError(TestCase):
         handler = ModelExceptionHandler("hello")
         new = ModelForTesting(a='abc', b=1)
         new.save()
-        with assert_error(ProjectError.UNPROCESSABLE, "hello"):
+        with assert_error(ProjectError.ALREADY_EXISTS, "hello"):
             with handler:
                 new = ModelForTesting(a='fas', b=1)
                 new.save()

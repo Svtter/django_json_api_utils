@@ -92,6 +92,8 @@ class ProjectError(metaclass=ProjectErrorMetaClass):
     NOT_ACCEPTABLE = e("Invalid content-type", 4)
     INVALID_FIELD_VALUE = e("Invalid field value", 5)
     REMOTE_SERVER_ERROR = e("Remote server error", 6, 503)
+    ALREADY_EXISTS = e("Resource already exists", 7)
+    MULTIPLE_RECORDS = e("Multiple records matched", 8)
 
     def __new__(cls, *args, **kwargs):
         raise TypeError("Cannot instantiate ProjectError or its subclasses")
