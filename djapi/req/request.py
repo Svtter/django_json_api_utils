@@ -173,8 +173,8 @@ def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_
             return default
         raise ProjectError.FIELD_MISSING(f"Field {field} is either missing of empty")
     elif allowed_values is not None and value not in allowed_values:
-        msg = f"""Value of field {field} can only be one of 
-        [{", ".join(map(lambda x: str(x), allowed_values))}], but {value} was given."""
+        choices = ", ".join(map(lambda x: str(x), allowed_values))
+        msg = f"""Value of field {field} can only be one of [{choices}], but {value} was given."""
         raise ProjectError.INVALID_FIELD_VALUE(msg)
     else:
         return value
