@@ -29,29 +29,30 @@ class HTTPRequestTest(LiveServerTestCase):
             'g': {}, 'h': {'a': 1}
         }
         request = self.factory.post('', test_json, content_type='application/json')
+        getter = json_field_getter(request)
         # field missing
         with assert_error(ProjectError.FIELD_MISSING, "abc"):
-            json_field_getter(request)('abc')
+            getter('abc')
         # field empty
         with assert_error(ProjectError.FIELD_MISSING, "d"):
-            json_field_getter(request)('d')
+            getter('d')
         with assert_error(ProjectError.FIELD_MISSING, "g"):
-            json_field_getter(request)('g')
+            getter('g')
         with assert_error(ProjectError.FIELD_MISSING, "e"):
-            json_field_getter(request)('e')
+            getter('e')
 
         # wrong field type
         with assert_error(ProjectError.WRONG_FIELD_TYPE, "str"):
-            json_field_getter(request)('a', str)
+            getter('a', str)
         # allow none
-        self.assertEqual(json_field_getter(request)('d', allow_empty=True), None)
+        self.assertEqual(getter('d', allow_empty=True), None)
         # allowed_values
         with assert_error(ProjectError.INVALID_FIELD_VALUE, '1, 2, 3'):
-            json_field_getter(request)('a', allowed_values=(1, 2, 3))
-        self.assertEqual(json_field_getter(request)('a', allowed_values=(0, 2, 3)), 0)
-        self.assertEqual(json_field_getter(request)('f'), [1, 2, 3])
-        self.assertEqual(json_field_getter(request)('h'), {'a': 1})
-        self.assertEqual(json_field_getter(request)('d', allow_empty=True, default=100), 100)
+            getter('a', allowed_values=(1, 2, 3))
+        self.assertEqual(getter('a', allowed_values=(0, 2, 3)), 0)
+        self.assertEqual(getter('f'), [1, 2, 3])
+        self.assertEqual(getter('h'), {'a': 1})
+        self.assertEqual(getter('d', allow_empty=True, default=100), 100)
 
     def test_get_param(self):
         request = self.factory.get('', {'a': 0, 'b': "abc", 'c': '', 'd': 'true'})
@@ -74,6 +75,7 @@ class HTTPRequestTest(LiveServerTestCase):
         self.assertEqual(getter('a', required_type=int, allow_empty=False), 0)
         self.assertEqual(getter('d', required_type=bool), True)
         self.assertEqual(getter('b', required_type=bool), False)
+        self.assertEqual(getter('b', required_type=str), "abc")
 
     def test_multipart_getter(self):
         with open('.gitignore', 'rb') as fp:
