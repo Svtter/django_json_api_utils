@@ -158,7 +158,7 @@ def get_param_value(request: HttpRequest, field: str, allow_empty=True, allowed_
     if not value:
         value = None
     if required_type:
-        assert required_type in (int, float, bool)
+        assert required_type in (int, float, bool, str)
         if value is not None:
             try:
                 if required_type is bool:
