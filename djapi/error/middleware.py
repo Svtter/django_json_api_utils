@@ -38,7 +38,7 @@ class ProjectExceptionMiddleware:
             msg = traceback.format_exc()
             if exception.secret_detail:
                 msg += f'\n{exception.secret_detail}'
-            logger.debug(msg)
+            logger.info(msg)
         r = HttpResponse(json.dumps(exception.to_dict(), ensure_ascii=False),
                          content_type='application/json; charset=utf-8')
         r.status_code = exception.status_code
