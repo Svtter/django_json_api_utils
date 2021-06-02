@@ -61,7 +61,7 @@ class JSONRequester:
             res = requests_func(*args, **kwargs)
         except Exception as e:
             self._clean()
-            raise ProjectError.REMOTE_SERVER_ERROR(secret_detail=str(e))
+            raise ProjectError.REMOTE_SERVER_ERROR(str(e))
         try:
             res = res.json()
         except Exception as e:
