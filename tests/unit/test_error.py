@@ -6,7 +6,7 @@ from djapi.error.error_code import ProjectError, ProjectException
 from djapi.error.error_handler import ModelExceptionHandler
 from djapi.error.middleware import ProjectExceptionMiddleware
 from django.test import TestCase, RequestFactory
-from tests_djapi.models import ModelForTesting
+from tests.models import ModelForTesting
 from djapi.test.testcase import assert_error
 
 

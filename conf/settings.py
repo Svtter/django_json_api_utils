@@ -17,20 +17,20 @@ SECRET_KEY = 'For testing purposes only!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ROOT_URLCONF = 'conf_test.urls'
+ROOT_URLCONF = 'conf.urls'
 ALLOWED_HOSTS = []
 
 # Application definition
 
 INSTALLED_APPS = [
-    'tests_djapi'
+    'tests'
 ]
 
 MIDDLEWARE = [
     'djapi.error.middleware.ProjectExceptionMiddleware',
 ]
 
-WSGI_APPLICATION = 'conf_test.wsgi.application'
+WSGI_APPLICATION = 'conf.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
