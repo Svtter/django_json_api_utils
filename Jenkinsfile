@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        a = 1
-        b = True
-        c = asdfasdf
-        RE_RAISE_UNKNOWN_EXCEPTIONS = False
+        a="1"
+        b="True"
+        c="asdfasdf"
+        RE_RAISE_UNKNOWN_EXCEPTIONS="False"
     }
 
     stages {
